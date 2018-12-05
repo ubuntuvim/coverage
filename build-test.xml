@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="AntTestReporting-test" basedir="." default="all-test" xmlns:jacoco="antlib:org.jacoco.ant">
+ 
+    <import file="build.xml" />
+ 
+    <!-- Java Code Coverage -->
+    <taskdef uri="antlib:org.jacoco.ant" resource="org/jacoco/ant/antlib.xml">
+        <classpath path="jacocolib/jacocoant.jar" />
+    </taskdef>
+ 
+    <property name="reports.dir" value="${basedir}/reports" />
+    <property name="test.data.dir" value="${reports.dir}/testResults" />
+    <property name="coverage.reports.dir" value="${reports.dir}/coverage" />
+ 
+    <property name="xms" value="-Xms256m" />
+    <property name="xmx" value="-Xmx1024m" />
+    <!-- <property name="log4j.config" value="-Dlog4j.configuration=file:/${base.dir}/test/log4j-test.properties" /> -->
+	
+	<!-- test代码类路径，包括src代码、测试代码本身、jacoco jar -->    
+ 	<path id="classpath.test.dir">
+ 		<!-- 测试代码依赖src代码，需要作为test代码的运行classpath -->
+        <path refid="classpath.src.dir"/>
+        <pathelement location="${test.classess.dir}" />
+    </path>
+    
+    <target name="init-report-dir">
+    	<delete dir="${test.data.dir}" />
+    	<delete dir="${coverage.reports.dir}" />
+    	<delete dir="${reports.dir}" />
+    	
+    	<mkdir dir="${reports.dir}" />
+    	<mkdir dir="${test.data.dir}" />
+    	<mkdir dir="${coverage.reports.dir}" />
+    </target>
+	    
+    <target name="test" depends="init-report-dir, compile">
+        <echo>========= 运行所有test类 =========</echo>
+        <jacoco:coverage destfile="${test.data.dir}/jacoco.exec">
+            <junit printsummary="true" haltonfailure="false" fork="yes" forkmode="once">
+                <jvmarg value="${xms}" />
+                <jvmarg value="${xmx}" />
+                <classpath refid="classpath.test.dir" />
+                <formatter type="xml" />
+                <!-- 执行 *Test类 -->
+                <batchtest todir="${test.data.dir}">
+                    <fileset dir="${test.classess.dir}">
+                        <!-- Exclude inner classes -->
+                        <exclude name="**/*$*.class" />
+                        <include name="**/*Test.class" />
+                    </fileset>
+                </batchtest>
+            </junit>
+        </jacoco:coverage>
+ 
+        <!-- Generate HTML report
+            - junit-noframes.html -> Single page HTML-report
+            - index.html -> HTML-report using frames (several files, but more comfortable to read)-->
+        <echo>========= 生成Junit报告 =========</echo>
+        <junitreport todir="${test.data.dir}">
+            <fileset dir="${test.data.dir}">
+                <include name="TEST-*.xml" />
+            </fileset>
+        </junitreport>
+ 
+ 
+        <!-- Generate Code Coverage report
+            See: http://www.eclemma.org/jacoco/trunk/doc/ant.html -->
+        <echo>========= 生成覆盖率报告 =========</echo>    
+        <jacoco:report>
+            <executiondata>
+                <file file="${test.data.dir}/jacoco.exec" />
+            </executiondata>
+ 
+            <structure name="AntTestReporting">
+                <classfiles>
+                    <fileset dir="${src.classess.dir}">
+                        <include name="**/*.class" />
+                        <!-- 生成的报告中排除test类 -->
+                        <!-- <exclude name="**/*Test*.class" /> -->
+                        <!-- Exclude inner classes -->
+                        <exclude name="**/*$*.class" />
+                    </fileset>
+                </classfiles>
+            </structure>
+ 
+            <html destdir="${coverage.reports.dir}" />
+        </jacoco:report>
+    </target>
+ 
+    <target name="all-test" depends="test" />
+</project>

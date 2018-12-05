@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="AntTestReporting" basedir="." default="compile">
+ 
+    <!-- general -->
+    <property name="DEBUG" value="true" />
+    <property name="VERBOSE" value="true" />
+    <property name="TARGET" value="1.8" />
+ 
+    <!-- folder -->
+    <property name="build.dir" value="build" />
+    <property name="src.dir" value="src/java" />
+    <property name="src.classess.dir" value="${build.dir}/classess" />
+    <property name="test.dir" value="test/java" />
+    <property name="test.classess.dir" value="${build.dir}/test-classess" />
+    <property name="third-party-lib" value="jacocolib" />
+ 
+    <!-- classpath -->
+    <path id="classpath">
+        <fileset dir="${third-party-lib}">
+            <include name="**/*.jar" />
+        </fileset>
+    </path>
+ 
+    <!-- targets -->
+    <target name="clean">
+        <delete dir="${build.dir}" />
+    </target>
+    <target name="init">
+        <mkdir dir="${build.dir}" />
+        <mkdir dir="${src.classess.dir}" />
+        <mkdir dir="${test.classess.dir}" />
+    </target>
+ 
+    <target name="compile" depends="clean, init">
+        <!-- Create the time stamp -->
+        <tstamp>
+            <format property="lastUpdated" pattern="yyyy-MM-dd HH:mm:ss" />
+        </tstamp>
+ 
+ 		<!-- 编译java代码 -->
+        <javac target="${TARGET}" debug="${DEBUG}" verbose="${VERBOSE}" classpathref="classpath"
+        	optimize="true" destdir="${src.classess.dir}" srcdir="${src.dir}">
+        </javac>
+        <echo>======== java代码编译完毕 ========</echo>
+        
+        <path id="classpath.src.dir">
+	        <pathelement location="${src.classess.dir}" />
+	        <!-- 引入第三方jar -->
+	        <fileset dir="${third-party-lib}">
+	            <include name="**/*.jar" />
+	        </fileset>
+	    </path>
+ 		<!-- 编译test代码 -->
+        <javac target="${TARGET}" debug="${DEBUG}" verbose="${VERBOSE}"
+        	optimize="true" destdir="${test.classess.dir}" srcdir="${test.dir}">
+        	<!-- test代码依赖src的代码和第三方jar -->
+        	<classpath refid="classpath.src.dir" />
+        </javac>
+ 		<echo>======== test代码编译完毕 ========</echo>
+    </target>
+ 
+</project>
