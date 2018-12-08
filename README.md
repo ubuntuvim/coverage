@@ -482,8 +482,9 @@ public class UserServiceImplTest extends AbstractBaseJunit4Test {
 
 `coverage-report`和`junit-report`分别存放着覆盖率报告和单元测试报告，用浏览器直接打开这两个目录下`index.html`即可看到报告的详细信息。
 
+![junit报告](/image/blog-image/java/junit-coverage/7.png)
 
-
+![覆盖率报告](/image/blog-image/java/junit-coverage/8.png)
 
 
 
