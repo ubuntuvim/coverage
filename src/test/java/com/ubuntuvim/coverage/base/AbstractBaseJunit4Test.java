@@ -18,5 +18,5 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 //@TransactionConfiguration(transactionManager = "transactionManager", defaultRollback = true)    
 //------------
 public abstract class AbstractBaseJunit4Test {
-	
+
 }

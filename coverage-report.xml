@@ -51,7 +51,7 @@
     <target name="run-test" depends="init-report-dir, compile, copy-spring-cfg">
         <echo>========= 运行所有test类 =========</echo>
         <jacoco:coverage destfile="${test.data.dir}/jacoco.exec">
-            <junit printsummary="true" haltonfailure="false" fork="yes" forkmode="once">
+            <junit printsummary="true" haltonfailure="false" fork="yes" forkmode="once" showoutput="yes">
                 <jvmarg value="${xms}" />
                 <jvmarg value="${xmx}" />
                 <classpath refid="classpath.test.dir" />

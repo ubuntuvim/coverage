@@ -1,3 +1,4 @@
+
 接着上一篇[http://xcoding.tech/2018/12/06/junit-jacoco/junit-jacoco%E4%BB%A3%E7%A0%81%E8%A6%86%E7%9B%96%E6%B5%8B%E8%AF%95/](http://xcoding.tech/2018/12/06/junit-jacoco/junit-jacoco%E4%BB%A3%E7%A0%81%E8%A6%86%E7%9B%96%E6%B5%8B%E8%AF%95/)。
 
 上一篇只是简单的java项目，实际应用通常会复杂很多，比如spring项目，那么本篇介绍如何在spring项目中做代码覆盖率扫描并生成报告。
@@ -407,7 +408,7 @@ public class UserServiceImplTest extends AbstractBaseJunit4Test {
     <target name="run-test" depends="init-report-dir, compile, copy-spring-cfg">
         <echo>========= 运行所有test类 =========</echo>
         <jacoco:coverage destfile="${test.data.dir}/jacoco.exec">
-            <junit printsummary="true" haltonfailure="false" fork="yes" forkmode="once">
+            <junit printsummary="true" haltonfailure="false" fork="yes" forkmode="once" showoutput="yes>
                 <jvmarg value="${xms}" />
                 <jvmarg value="${xmx}" />
                 <classpath refid="classpath.test.dir" />
@@ -474,6 +475,36 @@ public class UserServiceImplTest extends AbstractBaseJunit4Test {
 根据实际项目路径修改了一些相对路径，比较重要的有点是最好一个任务中把spring的测试基础类排除了。`<exclude name="**/AbstractBaseJunit4Test.class" />`。
 在`junitreport`标签内增加了一个`report`标签，用于自定义生成的单元测试结果模板。
 
+**注意**：最好是打开`junit`标签中的属性`showoutput="yes"`（值为`no`或者`yes`），打开这个属性之后所有代码中的`Logger`日志才会打印到控制台，可以即时看到项目的实时日志方便调试。
+
+打开这个开关之后可以看到有类似如下的日志：
+
+```bash
+run-test:
+     [echo] ========= 运行所有test类 =========
+[jacoco:coverage] Enhancing junit with coverage
+    [junit] objc[21529]: Class JavaLaunchHelper is implemented in both /Library/Java/JavaVirtualMachines/jdk1.8.0_91.jdk/Contents/Home/jre/bin/java (0x10264b4c0) and /Library/Java/JavaVirtualMachines/jdk1.8.0_91.jdk/Contents/Home/jre/lib/libinstrument.dylib (0x1026c14e0). One of the two will be used. Which one is undefined.
+    [junit] 十二月 09, 2018 12:57:26 上午 org.springframework.test.context.support.AbstractTestContextBootstrapper getDefaultTestExecutionListenerClassNames
+    [junit] 信息: Loaded default TestExecutionListener class names from location [META-INF/spring.factories]: [org.springframework.test.context.web.ServletTestExecutionListener, org.springframework.test.context.support.DirtiesContextBeforeModesTestExecutionListener, org.springframework.test.context.support.DependencyInjectionTestExecutionListener, org.springframework.test.context.support.DirtiesContextTestExecutionListener, org.springframework.test.context.transaction.TransactionalTestExecutionListener, org.springframework.test.context.jdbc.SqlScriptsTestExecutionListener]
+    [junit] 十二月 09, 2018 12:57:26 上午 org.springframework.test.context.support.AbstractTestContextBootstrapper getTestExecutionListeners
+    [junit] 信息: Using TestExecutionListeners: [org.springframework.test.context.web.ServletTestExecutionListener@35e52059, org.springframework.test.context.support.DirtiesContextBeforeModesTestExecutionListener@62577d6, org.springframework.test.context.support.DependencyInjectionTestExecutionListener@49bd54f7, org.springframework.test.context.support.DirtiesContextTestExecutionListener@6b5f8707]
+    [junit] Running com.ubuntuvim.coverage.service.impl.UserServiceImplTest
+    [junit] 返回参数： = User [id=123, username=ubuntuvim, age=20]
+    [junit] Tests run: 1, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 1.61 sec
+    
+```
+
+重点是这几行日志：
+
+```bash
+…………
+[junit] 信息: Loaded default TestExecutionListener class names from location [META-INF/spring.factories]: 
+…………
+[junit] 返回参数： = User [id=123, username=ubuntuvim, age=20]
+```
+
+第一行是容器加载的日志，第二行是业务代码打印的Logger日志。
+
 #### 生成报告
 
 按照上述内容配置好之后就可以直接运行了。在`coverage-report.xml`上右键，选中ant运行即可。运行完毕后项目目录下新增`reports`目录，目录内存放这Junit报告、覆盖率报告。
@@ -488,3 +519,7 @@ public class UserServiceImplTest extends AbstractBaseJunit4Test {
 
 
 
+
+### 项目源码
+
+[https://github.com/ubuntuvim/coverage/tree/coverage-spring](https://github.com/ubuntuvim/coverage/tree/coverage-spring)
