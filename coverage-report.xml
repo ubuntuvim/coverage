@@ -1,25 +1,29 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project name="AntTestReporting-test" basedir="." default="all-test" xmlns:jacoco="antlib:org.jacoco.ant">
+<project name="AntTestReporting-test" basedir="." default="main" xmlns:jacoco="antlib:org.jacoco.ant">
  
-    <import file="build.xml" />
+    <import file="compile.xml" />
  
     <!-- Java Code Coverage -->
     <taskdef uri="antlib:org.jacoco.ant" resource="org/jacoco/ant/antlib.xml">
         <classpath path="jacocolib/jacocoant.jar" />
     </taskdef>
- 
-    <property name="reports.dir" value="${basedir}/reports" />
+ 	
+	<!-- spring配置 -->
+    <property name="spring.cfg.dir" value="${basedir}/src/main/resources" />
+
+	<property name="reports.dir" value="${basedir}/reports" />
     <property name="test.data.dir" value="${reports.dir}/testResults" />
-    <property name="coverage.reports.dir" value="${reports.dir}/coverage" />
+    <property name="coverage.reports.dir" value="${reports.dir}/coverage-report" />
+    <property name="junit.reports.dir" value="${reports.dir}/junit-report" />
  
     <property name="xms" value="-Xms256m" />
     <property name="xmx" value="-Xmx1024m" />
-    <!-- <property name="log4j.config" value="-Dlog4j.configuration=file:/${base.dir}/test/log4j-test.properties" /> -->
 	
 	<!-- test代码类路径，包括src代码、测试代码本身、jacoco jar -->    
  	<path id="classpath.test.dir">
  		<!-- 测试代码依赖src代码，需要作为test代码的运行classpath -->
-        <path refid="classpath.src.dir"/>
+        <path refid="classpath"/>
+ 		<pathelement location="${src.classess.dir}" />
         <pathelement location="${test.classess.dir}" />
     </path>
     
@@ -30,10 +34,21 @@
     	
     	<mkdir dir="${reports.dir}" />
     	<mkdir dir="${test.data.dir}" />
+    	<mkdir dir="${junit.reports.dir}" />
     	<mkdir dir="${coverage.reports.dir}" />
     </target>
+    		
+   	<target name="copy-spring-cfg" description="复制spring配置文件到test运行目录">
+   		<echo>复制spring配置到test运行目录</echo>
+    	<copy todir="${test.classess.dir}">
+    		<fileset dir="${spring.cfg.dir}">
+    			<include name="**/*.xml" />
+				<include name="**/*.properties" />
+			</fileset>
+    	</copy>	
+    </target>
 	    
-    <target name="test" depends="init-report-dir, compile">
+    <target name="run-test" depends="init-report-dir, compile, copy-spring-cfg">
         <echo>========= 运行所有test类 =========</echo>
         <jacoco:coverage destfile="${test.data.dir}/jacoco.exec">
             <junit printsummary="true" haltonfailure="false" fork="yes" forkmode="once">
@@ -44,7 +59,8 @@
                 <!-- 执行 *Test类 -->
                 <batchtest todir="${test.data.dir}">
                     <fileset dir="${test.classess.dir}">
-                        <!-- Exclude inner classes -->
+                        <!-- AbstractBaseJunit4Test类不需要执行 -->
+                        <exclude name="**/AbstractBaseJunit4Test.class" />
                         <exclude name="**/*$*.class" />
                         <include name="**/*Test.class" />
                     </fileset>
@@ -56,10 +72,18 @@
             - junit-noframes.html -> Single page HTML-report
             - index.html -> HTML-report using frames (several files, but more comfortable to read)-->
         <echo>========= 生成Junit报告 =========</echo>
-        <junitreport todir="${test.data.dir}">
+        <junitreport todir="${test.data.dir}" description="单元测试报告">
             <fileset dir="${test.data.dir}">
                 <include name="TEST-*.xml" />
             </fileset>
+        	<!-- 生成一个HTML网页报告 -->
+        	<!-- 自定义报告的格式文件目录，通常从/ANT_HOME/etc/目录直接把junit-frames.xsl和junit-noframes.xsl复制过即可，
+        	目的是为了自定义报告的标题，默认的报告title为：Unit Test Results
+        	https://ant.apache.org/manual/Tasks/junitreport.html
+        	-->
+            <report format="frames" todir="${junit.reports.dir}" styledir="${basedir}/junit-report-style">
+	            <param name="TITLE" expression="junit单元测试报告"/>
+        	</report>
         </junitreport>
  
  
@@ -71,12 +95,12 @@
                 <file file="${test.data.dir}/jacoco.exec" />
             </executiondata>
  
-            <structure name="AntTestReporting">
+            <structure name="单元测试覆盖率报告">
                 <classfiles>
                     <fileset dir="${src.classess.dir}">
                         <include name="**/*.class" />
                         <!-- 生成的报告中排除test类 -->
-                        <!-- <exclude name="**/*Test*.class" /> -->
+                        <exclude name="**/AbstractBaseJunit4Test.class" />
                         <!-- Exclude inner classes -->
                         <exclude name="**/*$*.class" />
                     </fileset>
@@ -87,5 +111,5 @@
         </jacoco:report>
     </target>
  
-    <target name="all-test" depends="test" />
+    <target name="main" depends="run-test" />
 </project>
