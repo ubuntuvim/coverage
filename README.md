@@ -97,9 +97,11 @@ gradle clean test jacocoTestReport
 
 执行过程需要下载一下依赖jar，稍等几分钟之后刷新项目，一步步展开`build`目录。
 
-![覆盖率报告](/image/blog-image/java/junit-coverage/13.png)
+![报告文件](/image/blog-image/java/junit-coverage/13.png)
 
 打开`index.html`可以看到详细报告内容。
+
+![覆盖率报告](/image/blog-image/java/junit-coverage/14.png)
 
 使用gradle是在简单很多，根本不需要你编写一大堆的脚本。非常爽。
 
